@@ -102,3 +102,29 @@ WHERE first_name LIKE 'A__';
 SELECT *
 FROM employee_demographics
 WHERE first_name LIKE 'A__%';
+
+-- Execution
+
+SELECT gender, COUNT(*), AVG(age), MIN(birth_date)
+FROM employee_demographics
+GROUP BY gender;
+
+SELECT *
+FROM employee_demographics
+ORDER BY gender ASC, age DESC;
+
+SELECT occupation, AVG(salary)
+FROM employee_salary
+WHERE first_name  LIKE '%r%'
+GROUP BY occupation
+HAVING AVG(salary) > 50000;
+
+SELECT first_name, salary
+FROM employee_salary
+ORDER BY salary DESC
+LIMIT 3;
+
+SELECT gender, AVG(age) as avg_age
+FROM employee_demographics
+GROUP BY gender
+HAVING AVG(age) > 40;
