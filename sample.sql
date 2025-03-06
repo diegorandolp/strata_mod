@@ -103,7 +103,7 @@ SELECT *
 FROM employee_demographics
 WHERE first_name LIKE 'A__%';
 
--- Execution
+-- Joins
 
 SELECT gender, COUNT(*), AVG(age), MIN(birth_date)
 FROM employee_demographics
@@ -128,3 +128,80 @@ SELECT gender, AVG(age) as avg_age
 FROM employee_demographics
 GROUP BY gender
 HAVING AVG(age) > 40;
+
+-- Joins
+
+SELECT *
+FROM employee_demographics AS de
+JOIN employee_salary AS sa
+ON de.employee_id = sa.employee_id;
+
+SELECT *
+FROM employee_salary AS sa
+LEFT JOIN employee_demographics AS de
+ON de.employee_id = sa.employee_id;
+
+SELECT *
+FROM employee_salary AS sa
+FULL OUTER JOIN employee_demographics AS de
+ON de.employee_id = sa.employee_id;
+
+SELECT COUNT(*)
+FROM employee_demographics
+CROSS JOIN employee_salary;
+
+-- Self join
+SELECT e1.first_name as name1, e2.first_name as name2
+FROM employee_salary as e1
+JOIN employee_salary as e2
+ON e1.employee_id + 1 = e2.employee_id;
+
+SELECT es.employee_id, pd.department_name, ed.age
+FROM employee_salary as es
+JOIN parks_departments as pd
+    ON es.dept_id = pd.department_id
+JOIN employee_demographics as ed
+    ON es.employee_id = ed.employee_id;
+
+-- Set
+SELECT first_name, last_name
+FROM employee_demographics
+UNION
+SELECT first_name, last_name
+FROM employee_salary;
+
+
+SELECT first_name, last_name
+FROM employee_demographics
+UNION ALL
+SELECT first_name, last_name
+FROM employee_salary;
+
+SELECT first_name, last_name, 'Old man' as label
+FROM employee_demographics
+WHERE age > 40 AND gender = 'Male'
+UNION
+SELECT first_name, last_name, 'Old lady' as label
+FROM employee_demographics
+WHERE age > 40 AND gender = 'Female'
+UNION
+SELECT first_name, last_name, 'Higly paid' as label
+FROM employee_salary
+WHERE salary > 70000
+ORDER BY first_name, last_name;
+
+-- String
+
+SELECT UPPER(first_name), LOWER(last_name), LENGTH(first_name) as length,
+       EXTRACT(MONTH from birth_date) as month,
+       SUBSTRING(last_name, 2, 2) as sub_last,
+       REPLACE(first_name, 'a', '4') as name_mod,
+       POSITION('a' in first_name) as pos_a,
+       CONCAT(first_name, ' ', last_name) as full_name
+FROM employee_demographics
+ORDER BY length;
+
+SELECT TRIM('   skyfall   ');
+SELECT LTRIM('   skyfall   ');
+SELECT RTRIM('   skyfall   ');
+
