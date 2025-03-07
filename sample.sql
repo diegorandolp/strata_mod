@@ -258,3 +258,45 @@ FROM (
     FROM employee_demographics
     GROUP BY gender
      ) AS t1;
+
+
+-- Window functions
+SELECT t1.first_name,
+       SUM(t2.salary) OVER (PARTITION BY t1.gender ORDER BY t1.employee_id
+           ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) as avg_salary
+FROM employee_demographics as t1
+JOIN employee_salary as t2
+    ON t1.employee_id = t2.employee_id;
+
+SELECT t1.first_name,
+       ROW_NUMBER() OVER (PARTITION BY t1.gender) as number
+FROM employee_demographics as t1
+JOIN employee_salary as t2
+  ON t1.employee_id = t2.employee_id;
+
+SELECT t1.first_name, t2.salary,
+       ROW_NUMBER() OVER(PARTITION BY t1.gender ORDER BY t2.salary DESC) as row_num,
+       RANK() OVER(PARTITION BY t1.gender ORDER BY t2.salary DESC) as rank,
+       DENSE_RANK() OVER(PARTITION BY t1.gender ORDER BY t2.salary DESC) AS dense_rank,
+       PERCENT_RANK() OVER(PARTITION BY t1.gender ORDER BY t2.salary DESC) AS pct_rank,
+       NTILE(3) OVER(PARTITION BY t1.gender ORDER BY t2.salary DESC) AS ntile,
+       CUME_DIST() OVER(PARTITION BY t1.gender ORDER BY t2.salary DESC) AS cume_dist
+FROM employee_demographics AS t1
+JOIN employee_salary AS t2
+    ON t1.employee_id = t2.employee_id;
+
+SELECT t1.first_name, t1.salary,
+       FIRST_VALUE(t1.salary) OVER(
+           ORDER BY t1.salary DESC
+           ROWS BETWEEN
+              UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+           ) AS highest_salary
+FROM employee_salary as t1;
+
+SELECT t1.year, t1.age,
+       LAG(t1.age, 1) OVER(ORDER BY t1.year) as prev_age,
+       LEAD(t1.age, 1) OVER(ORDER BY t1.year) as next_age
+FROM (
+         SELECT EXTRACT(YEAR FROM t2.birth_date) as year, t2.age
+         FROM employee_demographics as t2
+     ) as t1;
