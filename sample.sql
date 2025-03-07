@@ -81,10 +81,12 @@ VALUES ('Parks and Recreation'),
 
 -- Execution
 
-SELECT DISTINCT dept_id from employee_salary;
+SELECT DISTINCT dept_id
+from employee_salary;
 
 
-SELECT salary + 10 as salary_plus_10 from employee_salary;
+SELECT salary + 10 as salary_plus_10
+from employee_salary;
 
 SELECT *
 FROM employee_demographics
@@ -115,7 +117,7 @@ ORDER BY gender ASC, age DESC;
 
 SELECT occupation, AVG(salary)
 FROM employee_salary
-WHERE first_name  LIKE '%r%'
+WHERE first_name LIKE '%r%'
 GROUP BY occupation
 HAVING AVG(salary) > 50000;
 
@@ -133,35 +135,35 @@ HAVING AVG(age) > 40;
 
 SELECT *
 FROM employee_demographics AS de
-JOIN employee_salary AS sa
-ON de.employee_id = sa.employee_id;
+         JOIN employee_salary AS sa
+              ON de.employee_id = sa.employee_id;
 
 SELECT *
 FROM employee_salary AS sa
-LEFT JOIN employee_demographics AS de
-ON de.employee_id = sa.employee_id;
+         LEFT JOIN employee_demographics AS de
+                   ON de.employee_id = sa.employee_id;
 
 SELECT *
 FROM employee_salary AS sa
-FULL OUTER JOIN employee_demographics AS de
-ON de.employee_id = sa.employee_id;
+         FULL OUTER JOIN employee_demographics AS de
+                         ON de.employee_id = sa.employee_id;
 
 SELECT COUNT(*)
 FROM employee_demographics
-CROSS JOIN employee_salary;
+         CROSS JOIN employee_salary;
 
 -- Self join
 SELECT e1.first_name as name1, e2.first_name as name2
 FROM employee_salary as e1
-JOIN employee_salary as e2
-ON e1.employee_id + 1 = e2.employee_id;
+         JOIN employee_salary as e2
+              ON e1.employee_id + 1 = e2.employee_id;
 
 SELECT es.employee_id, pd.department_name, ed.age
 FROM employee_salary as es
-JOIN parks_departments as pd
-    ON es.dept_id = pd.department_id
-JOIN employee_demographics as ed
-    ON es.employee_id = ed.employee_id;
+         JOIN parks_departments as pd
+              ON es.dept_id = pd.department_id
+         JOIN employee_demographics as ed
+              ON es.employee_id = ed.employee_id;
 
 -- Set
 SELECT first_name, last_name
@@ -179,11 +181,13 @@ FROM employee_salary;
 
 SELECT first_name, last_name, 'Old man' as label
 FROM employee_demographics
-WHERE age > 40 AND gender = 'Male'
+WHERE age > 40
+  AND gender = 'Male'
 UNION
 SELECT first_name, last_name, 'Old lady' as label
 FROM employee_demographics
-WHERE age > 40 AND gender = 'Female'
+WHERE age > 40
+  AND gender = 'Female'
 UNION
 SELECT first_name, last_name, 'Higly paid' as label
 FROM employee_salary
@@ -192,11 +196,13 @@ ORDER BY first_name, last_name;
 
 -- String
 
-SELECT UPPER(first_name), LOWER(last_name), LENGTH(first_name) as length,
-       EXTRACT(MONTH from birth_date) as month,
-       SUBSTRING(last_name, 2, 2) as sub_last,
-       REPLACE(first_name, 'a', '4') as name_mod,
-       POSITION('a' in first_name) as pos_a,
+SELECT UPPER(first_name),
+       LOWER(last_name),
+       LENGTH(first_name)                 as length,
+       EXTRACT(MONTH from birth_date)     as month,
+       SUBSTRING(last_name, 2, 2)         as sub_last,
+       REPLACE(first_name, 'a', '4')      as name_mod,
+       POSITION('a' in first_name)        as pos_a,
        CONCAT(first_name, ' ', last_name) as full_name
 FROM employee_demographics
 ORDER BY length;
@@ -205,3 +211,50 @@ SELECT TRIM('   skyfall   ');
 SELECT LTRIM('   skyfall   ');
 SELECT RTRIM('   skyfall   ');
 
+-- Case
+
+SELECT t1.first_name,
+       CASE
+           WHEN t1.age >= 40 THEN 'Old'
+           WHEN t1.age BETWEEN 30 AND 40 THEN 'Middle'
+           ELSE 'Young'
+       END AS age_group,
+       t1.age
+FROM employee_demographics AS t1;
+
+
+SELECT CONCAT(t1.first_name, ' ', t1.last_name) as full_name,
+       CASE
+           WHEN t1.salary > 50000 THEN t1.salary * 1.05
+           WHEN t1.salary <= 50000 THEN t1.salary * 1.05
+           ELSE t1.salary
+       END AS new_salary,
+       CASE
+           WHEN t2.department_name = 'Finance' THEN salary * 0.1
+           ELSE 0
+       END AS bonus
+FROM employee_salary as t1
+JOIN parks_departments as t2
+    ON t1.dept_id = t2.department_id;
+
+SELECT t1.first_name, t1.salary, 'High' as salary_level
+FROM employee_salary as t1
+WHERE t1.salary > (
+    SELECT AVG(salary)
+    FROM employee_salary
+    )
+UNION
+SELECT t1.first_name, t1.salary, 'Low' as salary_level
+FROM employee_salary as t1
+WHERE t1.salary <= (
+    SELECT AVG(salary)
+    FROM employee_salary
+);
+
+-- Select the average age of maximum ages by gender
+SELECT AVG(t1.max_age)
+FROM (
+    SELECT gender, MAX(age) AS max_age
+    FROM employee_demographics
+    GROUP BY gender
+     ) AS t1;
