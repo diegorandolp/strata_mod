@@ -269,7 +269,7 @@ JOIN employee_salary as t2
     ON t1.employee_id = t2.employee_id;
 
 SELECT t1.first_name,
-       ROW_NUMBER() OVER (PARTITION BY t1.gender) as number
+       ROW_NUMBER() OVER (ORDER BY t1.employee_id) as number
 FROM employee_demographics as t1
 JOIN employee_salary as t2
   ON t1.employee_id = t2.employee_id;
@@ -294,9 +294,28 @@ SELECT t1.first_name, t1.salary,
 FROM employee_salary as t1;
 
 SELECT t1.year, t1.age,
-       LAG(t1.age, 1) OVER(ORDER BY t1.year) as prev_age,
-       LEAD(t1.age, 1) OVER(ORDER BY t1.year) as next_age
+       LAG(t1.age, 1) OVER(ORDER BY t1.year DESC) as prev_age,
+       LEAD(t1.age, 1) OVER(ORDER BY t1.year DESC) as next_age
 FROM (
          SELECT EXTRACT(YEAR FROM t2.birth_date) as year, t2.age
          FROM employee_demographics as t2
      ) as t1;
+
+SELECT t1.first_name, t1.salary,
+       MAX(t1.salary) OVER()
+FROM employee_salary as t1;
+
+SELECT t1.first_name, t1.salary,
+       NTH_VALUE(t1.salary, 2) OVER(
+           ORDER BY t1.salary DESC
+           ) AS second_highest_salary
+FROM employee_salary as t1;
+
+-- CTE
+WITH cte AS (
+    SELECT t1.first_name, t1.salary
+    FROM employee_salary as t1
+    WHERE t1.salary > 50000
+)
+SELECT *
+FROM cte;
