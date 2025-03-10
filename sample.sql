@@ -310,12 +310,3 @@ SELECT t1.first_name, t1.salary,
            ORDER BY t1.salary DESC
            ) AS second_highest_salary
 FROM employee_salary as t1;
-
--- CTE
-WITH cte AS (
-    SELECT t1.first_name, t1.salary
-    FROM employee_salary as t1
-    WHERE t1.salary > 50000
-)
-SELECT *
-FROM cte;
