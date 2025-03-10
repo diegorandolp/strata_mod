@@ -411,3 +411,42 @@ AS $$
 $$;
 
 CALL increase_salary_department(9, 1);
+
+-- Triggers
+
+CREATE TABLE salary_changes(
+    id INT GENERATED ALWAYS AS IDENTITY,
+    employee_id INT NOT NULL,
+    old_salary INT NOT NULL,
+    new_salary INT NOT NULL,
+    change_date DATE NOT NULL
+);
+
+CREATE OR REPLACE FUNCTION monitor_salary_changes()
+    RETURNS TRIGGER
+    LANGUAGE PLPGSQL
+AS $$
+    BEGIN
+        IF NEW.salary != OLD.salary THEN
+            INSERT INTO salary_changes(employee_id, old_salary, new_salary, change_date)
+            VALUES (OLD.employee_id, OLD.salary, NEW.salary, NOW());
+        END IF;
+        -- RETURN NEW/NULL to continue/stop the operation
+        RETURN NEW;
+    END;
+$$;
+
+-- Bind the trigger to the table
+CREATE TRIGGER salary_change_trigger
+    BEFORE UPDATE
+    ON employee_salary
+    FOR EACH ROW
+    EXECUTE FUNCTION monitor_salary_changes();
+
+INSERT INTO employee_salary (employee_id, first_name, last_name, occupation, salary, dept_id)
+VALUES (13, 'Jerry', 'Gergich', 'Office Manager', 50000, 1);
+
+UPDATE employee_salary
+SET salary = 55000
+WHERE employee_id = 13;
+
