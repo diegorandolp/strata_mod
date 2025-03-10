@@ -310,3 +310,63 @@ SELECT t1.first_name, t1.salary,
            ORDER BY t1.salary DESC
            ) AS second_highest_salary
 FROM employee_salary as t1;
+
+-- CTE
+WITH cte AS (
+    SELECT t1.first_name, t1.salary
+    FROM employee_salary as t1
+)
+SELECT cte.first_name, cte.salary
+FROM cte;
+
+WITH cte AS (
+    SELECT t1.employee_id, t1.salary
+    FROM employee_salary as t1
+),
+cte2 AS (
+    SELECT t1.employee_id, t1.age
+    FROM employee_demographics as t1
+)
+SELECT *
+FROM cte as t1
+JOIN cte2 as t2
+    ON t1.employee_id = t2.employee_id;
+
+-- Temporary table
+
+CREATE TEMPORARY TABLE temp_table (
+    first_name VARCHAR(50),
+    last_name  VARCHAR(50),
+    favorite_movie VARCHAR(100)
+);
+
+INSERT INTO temp_table(first_name, last_name, favorite_movie)
+VALUES ('Leslie', 'Knope', 'The Godfather'),
+       ('Tom', 'Haverford', 'The Dark Knight'),
+       ('April', 'Ludgate', 'Pulp Fiction');
+
+SELECT *
+FROM temp_table;
+
+
+CREATE TEMPORARY TABLE salary_over_50k AS
+SELECT *
+FROM employee_salary
+WHERE salary > 50000;
+
+SELECT *
+FROM salary_over_50k;
+
+-- Procedures
+
+CREATE OR REPLACE PROCEDURE get_employee_info()
+LANGUAGE PLPGSQL
+AS $$
+    BEGIN
+        SELECT t1.first_name, t1.age
+        FROM employee_demographics AS t1;
+    END;
+$$;
+
+CALL get_employee_info();
+
