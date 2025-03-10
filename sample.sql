@@ -357,16 +357,57 @@ WHERE salary > 50000;
 SELECT *
 FROM salary_over_50k;
 
--- Procedures
+-- Functions
 
-CREATE OR REPLACE PROCEDURE get_employee_info()
-LANGUAGE PLPGSQL
+DROP FUNCTION IF EXISTS get_employee_info();
+
+CREATE OR REPLACE FUNCTION get_employee_info()
+    RETURNS TABLE(first_name VARCHAR(50), age INT)
+    LANGUAGE PLPGSQL
 AS $$
     BEGIN
+        RETURN QUERY
         SELECT t1.first_name, t1.age
         FROM employee_demographics AS t1;
     END;
 $$;
 
-CALL get_employee_info();
+SELECT * FROM get_employee_info();
+--
 
+DROP FUNCTION IF EXISTS get_count_age(searched_age INTEGER);
+
+CREATE OR REPLACE FUNCTION get_count_age(searched_age INTEGER)
+    RETURNS INTEGER
+    LANGUAGE PLPGSQL
+AS $$
+    DECLARE
+        employee_count INTEGER;
+    BEGIN
+        SELECT COUNT(*) INTO employee_count
+        FROM employee_demographics AS t1
+        WHERE t1.age >= searched_age;
+
+        RETURN employee_count;
+    END;
+$$;
+
+SELECT get_count_age(40);
+
+-- Procedures
+
+DROP PROCEDURE IF EXISTS increase_salary_department(amount INT, dep_id INT);
+
+CREATE OR REPLACE PROCEDURE increase_salary_department(amount INT, dep_id INT)
+LANGUAGE PLPGSQL
+AS $$
+    BEGIN
+        UPDATE employee_salary
+        SET salary = salary + amount
+        WHERE dept_id = dep_id;
+
+        COMMIT;
+    END;
+$$;
+
+CALL increase_salary_department(9, 1);
