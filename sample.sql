@@ -450,3 +450,32 @@ UPDATE employee_salary
 SET salary = 55000
 WHERE employee_id = 13;
 
+-- Event Triggers
+
+CREATE TABLE audit_log(
+    id INT GENERATED ALWAYS AS IDENTITY,
+    command VARCHAR(50) NOT NULL,
+    event_date DATE NOT NULL
+);
+
+CREATE OR REPLACE FUNCTION monitor_events()
+    RETURNS EVENT_TRIGGER
+    LANGUAGE PLPGSQL
+AS $$
+    BEGIN
+        INSERT INTO audit_log(command, event_date)
+        VALUES (TG_TAG, NOW());
+    END;
+$$;
+
+-- ddl_command_end: end of CREATE, ALTER, DROP, etc
+CREATE EVENT TRIGGER event_trigger
+    ON ddl_command_end
+    EXECUTE FUNCTION monitor_events();
+
+CREATE TABLE new_table(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50)
+);
+
+SELECT * FROM audit_log;
