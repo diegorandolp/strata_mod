@@ -479,3 +479,5 @@ CREATE TABLE new_table(
 );
 
 SELECT * FROM audit_log;
+
+DROP EVENT TRIGGER event_trigger;
