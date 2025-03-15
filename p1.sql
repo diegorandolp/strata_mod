@@ -18,7 +18,10 @@ CREATE TABLE layoffs(
     funds_raised_millions NUMERIC
 );
 
-copy layoffs FROM './layoffs.csv' DELIMITER ',' CSV HEADER;
+-- cp /home/.../layoffs.csv /tmp/
+
+
+\copy layoffs FROM '/home/diegorandolp/Code/NoUTEC/Data/strata_mod/layoffs.csv' DELIMITER ',' CSV HEADER
 
 SELECT *
 FROM layoffs
