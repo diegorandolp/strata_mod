@@ -136,4 +136,24 @@ DROP COLUMN row_num;
 
 SELECT *
 FROM layoffs_no_duplicates
+WHERE total_laid_off IS NOT NULL
+ORDER BY total_laid_off DESC
 LIMIT 5;
+
+-- Fix: total_laid_off to NUMERIC
+ALTER TABLE layoffs_no_duplicates
+ALTER COLUMN total_laid_off
+SET DATA TYPE NUMERIC USING total_laid_off::NUMERIC;
+
+SELECT *
+FROM (
+SELECT EXTRACT(YEAR FROM t1.date_layoff) AS year, t1.company,
+    SUM(total_laid_off) AS total_per_year,
+    COUNT(*) AS number_of_layoffs,
+    ROW_NUMBER() OVER(PARTITION BY EXTRACT(YEAR FROM t1.date_layoff) ORDER BY SUM(total_laid_off) DESC) AS row_num
+FROM layoffs_no_duplicates AS t1
+WHERE t1.total_laid_off IS NOT NULL
+GROUP BY EXTRACT(YEAR FROM t1.date_layoff), t1.company
+ORDER BY year, total_per_year DESC) AS t1
+WHERE t1.row_num <= 5;
+
