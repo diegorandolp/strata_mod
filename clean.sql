@@ -147,13 +147,32 @@ SET DATA TYPE NUMERIC USING total_laid_off::NUMERIC;
 
 SELECT *
 FROM (
-SELECT EXTRACT(YEAR FROM t1.date_layoff) AS year, t1.company,
-    SUM(total_laid_off) AS total_per_year,
-    COUNT(*) AS number_of_layoffs,
-    ROW_NUMBER() OVER(PARTITION BY EXTRACT(YEAR FROM t1.date_layoff) ORDER BY SUM(total_laid_off) DESC) AS row_num
-FROM layoffs_no_duplicates AS t1
-WHERE t1.total_laid_off IS NOT NULL
-GROUP BY EXTRACT(YEAR FROM t1.date_layoff), t1.company
-ORDER BY year, total_per_year DESC) AS t1
+    SELECT EXTRACT(YEAR FROM t1.date_layoff) AS year, t1.company,
+        SUM(total_laid_off) AS total_per_year,
+        COUNT(*) AS number_of_layoffs,
+        ROW_NUMBER() OVER(PARTITION BY EXTRACT(YEAR FROM t1.date_layoff)
+            ORDER BY SUM(total_laid_off) DESC) AS row_num
+    FROM layoffs_no_duplicates AS t1
+    WHERE t1.total_laid_off IS NOT NULL
+    GROUP BY EXTRACT(YEAR FROM t1.date_layoff), t1.company
+    ORDER BY year, total_per_year DESC
+    ) AS t1
 WHERE t1.row_num <= 5;
 
+-- 1. Number of layoffs, numbers of companies that layoff, and raised funds per country and month
+
+SELECT EXTRACT(YEAR FROM t1.date_layoff) AS year_layoff,
+       EXTRACT(MONTH FROM t1.date_layoff) AS month_layoff, COUNT(*)
+FROM layoffs_no_duplicates AS t1
+GROUP BY EXTRACT(YEAR FROM t1.date_layoff),
+        EXTRACT(MONTH FROM t1.date_layoff)
+ORDER BY year_layoff, month_layoff;
+
+-- Better option
+SELECT TO_CHAR(t1.date_layoff, 'YYYY-MM') AS year_mont_layoff,
+       COUNT(*) AS number_of_layoffs,
+       COUNT(DISTINCT t1.company) AS number_of_companies,
+         SUM(t1.funds_raised_millions) AS total_funds_raised
+FROM layoffs_no_duplicates AS t1
+GROUP BY TO_CHAR(t1.date_layoff, 'YYYY-MM')
+ORDER BY year_mont_layoff;
